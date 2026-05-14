@@ -6,7 +6,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 function decodeStartParam(param) {
   if (!param) return null;
   try {
-    // Re-add removed padding, convert back from base64url
     let b64 = param.replace(/-/g, '+').replace(/_/g, '/');
     while (b64.length % 4 !== 0) b64 += '=';
     return atob(b64);
@@ -19,13 +18,30 @@ function buildFilesAddaUrl(fileCode) {
   return `https://filesadda.site/${fileCode}`;
 }
 
-// States: idle → need-ad-1 → watching-ad-1 → fetching → ready-to-watch → need-ad-2 → watching-ad-2 → playing | error
 export default function Home() {
   const [link, setLink] = useState('');
   const [status, setStatus] = useState('idle');
+  // idle | fetching | playing | error
   const [videoUrl, setVideoUrl] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const videoRef = useRef(null);
+
+  // ── AdsGram controllers (pre-initialized once) ──
+  const rewardedAdRef = useRef(null);
+  const interstitialAdRef = useRef(null);
+
+  // Pre-init AdsGram on mount
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && window.Adsgram) {
+        rewardedAdRef.current = window.Adsgram.init({ blockId: '30183' });
+        interstitialAdRef.current = window.Adsgram.init({ blockId: 'int-30184' });
+        console.log('[AdsGram] Both ad controllers initialized');
+      }
+    } catch (e) {
+      console.log('[AdsGram] Init skipped:', e);
+    }
+  }, []);
 
   // ── On mount: read startapp param from Telegram ──
   useEffect(() => {
@@ -45,36 +61,40 @@ export default function Home() {
     }
   }, []);
 
-  // ── Step 1: User clicks Download → show first ad ──
-  const handleDownload = useCallback(() => {
+  // ── User clicks Play → show rewarded ad → fetch video → interstitial randomly after ──
+  const handleDownload = useCallback(async () => {
     if (!link.trim()) return;
-    setStatus('need-ad-1');
-  }, [link]);
-
-  // ── Watch Ad helper ──
-  const showAd = useCallback(() => {
-    return new Promise((resolve) => {
-      if (typeof window !== 'undefined' && typeof window.show_10765305 === 'function') {
-        window.show_10765305().then(resolve).catch(resolve);
-      } else {
-        setTimeout(resolve, 2000);
-      }
-    });
-  }, []);
-
-  // ── Ad 1: watch, then fetch FilesAdda API ──
-  const handleWatchAd1 = useCallback(async () => {
-    setStatus('watching-ad-1');
-    await showAd();
-
-    // Now fetch the direct video URL
     setStatus('fetching');
+
+    // Step 1: Show rewarded ad (30183)
+    try {
+      if (rewardedAdRef.current) await rewardedAdRef.current.show();
+    } catch (e) {
+      console.log('[AdsGram] Rewarded ad skipped:', e);
+    }
+
+    // Step 2: Fetch the video URL
     try {
       const res = await fetch(`/api/filesadda?url=${encodeURIComponent(link)}`);
       const data = await res.json();
       if (data.ok && data.videoUrl) {
         setVideoUrl(data.videoUrl);
-        setStatus('ready-to-watch');
+        setStatus('playing');
+
+        // Step 3: Show interstitial randomly after 5-15 seconds
+        const delay = 5000 + Math.random() * 10000;
+        setTimeout(async () => {
+          try {
+            if (interstitialAdRef.current) await interstitialAdRef.current.show();
+          } catch (e) {
+            console.log('[AdsGram] Interstitial skipped:', e);
+          }
+        }, delay);
+
+        // Auto-play video
+        setTimeout(() => {
+          videoRef.current?.play();
+        }, 300);
       } else {
         setErrorMsg(data.error || 'Could not get video link. Try again.');
         setStatus('error');
@@ -83,17 +103,7 @@ export default function Home() {
       setErrorMsg('Network error. Please try again.');
       setStatus('error');
     }
-  }, [link, showAd]);
-
-  // ── Ad 2: watch, then play video ──
-  const handleWatchAd2 = useCallback(async () => {
-    setStatus('watching-ad-2');
-    await showAd();
-    setStatus('playing');
-    setTimeout(() => {
-      videoRef.current?.play();
-    }, 300);
-  }, [showAd]);
+  }, [link]);
 
   // ── Reset everything ──
   const handleRetry = useCallback(() => {
@@ -127,78 +137,17 @@ export default function Home() {
             onClick={handleDownload}
             disabled={status !== 'idle' || !link.trim()}
           >
-            ⬇ Fetch
+            ▶ Play
           </button>
         </div>
       </section>
 
-      {/* ── Step 1: First Ad prompt ── */}
-      {status === 'need-ad-1' && (
-        <div className="status-card credits-card">
-          <div className="credits-header">
-            <div className="credits-icon">🎟</div>
-            <h3 className="credits-title">Step 1 of 2</h3>
-          </div>
-          <p className="credits-desc">
-            Watch a short ad to fetch the video link.
-          </p>
-          <div className="progress-row">
-            <span className="progress-dot active" />
-            <span className="progress-dot" />
-          </div>
-          <button className="btn btn-watch-ad" onClick={handleWatchAd1}>
-            🎬 Watch Ad & Fetch Link
-          </button>
-        </div>
-      )}
-
-      {/* ── Watching Ad 1 ── */}
-      {status === 'watching-ad-1' && (
-        <div className="status-card loading-card">
-          <div className="spinner" />
-          <p className="status-text">Loading ad...</p>
-          <p className="status-sub">Please wait, fetching your link after this</p>
-        </div>
-      )}
-
-      {/* ── Fetching video URL ── */}
+      {/* ── Fetching ── */}
       {status === 'fetching' && (
         <div className="status-card loading-card">
           <div className="spinner" />
           <p className="status-text">Fetching video...</p>
           <p className="status-sub">Getting your direct download link</p>
-        </div>
-      )}
-
-      {/* ── Step 2: Ready to watch, second ad prompt ── */}
-      {status === 'ready-to-watch' && (
-        <div className="status-card credits-card">
-          <div className="credits-header">
-            <div className="credits-icon">✅</div>
-            <h3 className="credits-title">Step 2 of 2</h3>
-          </div>
-          <p className="credits-desc">
-            Link found! Watch one more short ad to play the video.
-          </p>
-          <div className="progress-row">
-            <span className="progress-dot done" />
-            <span className="progress-dot active" />
-          </div>
-          <button className="btn btn-watch-ad" onClick={handleWatchAd2}>
-            🎬 Watch Ad & Play Video
-          </button>
-          <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="btn btn-download" style={{ marginTop: '10px', textAlign: 'center', display: 'block' }}>
-            📥 Download Instead
-          </a>
-        </div>
-      )}
-
-      {/* ── Watching Ad 2 ── */}
-      {status === 'watching-ad-2' && (
-        <div className="status-card loading-card">
-          <div className="spinner" />
-          <p className="status-text">Loading ad...</p>
-          <p className="status-sub">Video will play right after</p>
         </div>
       )}
 
@@ -235,9 +184,6 @@ export default function Home() {
           </button>
         </div>
       )}
-
-      {/* ── Ad Container ── */}
-      <div id="ad-container" className="ad-container" />
 
       {/* ── Footer ── */}
       <footer className="footer">

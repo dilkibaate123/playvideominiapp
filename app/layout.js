@@ -1,4 +1,5 @@
 import './globals.css';
+import Script from 'next/script';
 
 export const metadata = {
      title: 'Diskwala Video Downloader',
@@ -15,25 +16,26 @@ export default function RootLayout({ children }) {
                          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
                          rel="stylesheet"
                     />
-                    {/* Telegram WebApp SDK */}
-                    <script src="https://telegram.org/js/telegram-web-app.js" />
-                    {/* Monetag SDK */}
-                    <script src="//libtl.com/sdk.js" data-zone="10765305" data-sdk="show_10765305" async></script>
-                    
-                    {/* Google Analytics */}
-                    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRS6HDZHSY"></script>
-                    <script
-                         dangerouslySetInnerHTML={{
-                              __html: `
-                                   window.dataLayer = window.dataLayer || [];
-                                   function gtag(){dataLayer.push(arguments);}
-                                   gtag('js', new Date());
-                                   gtag('config', 'G-WRS6HDZHSY');
-                              `,
-                         }}
-                    />
                </head>
-               <body>{children}</body>
+               <body>
+                    {/* Telegram WebApp SDK */}
+                    <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
+                    {/* AdsGram SDK */}
+                    <Script src="https://sad.adsgram.ai/js/sad.min.js" strategy="beforeInteractive" />
+
+                    {/* Google Analytics */}
+                    <Script src="https://www.googletagmanager.com/gtag/js?id=G-WRS6HDZHSY" strategy="afterInteractive" />
+                    <Script id="google-analytics" strategy="afterInteractive">
+                         {`
+                              window.dataLayer = window.dataLayer || [];
+                              function gtag(){dataLayer.push(arguments);}
+                              gtag('js', new Date());
+                              gtag('config', 'G-WRS6HDZHSY');
+                         `}
+                    </Script>
+
+                    {children}
+               </body>
           </html>
      );
 }
