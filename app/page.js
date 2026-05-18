@@ -28,15 +28,15 @@ export default function Home() {
 
   // ── AdsGram controllers (pre-initialized once) ──
   const rewardedAdRef = useRef(null);
-  const interstitialAdRef = useRef(null);
+  const rewardedAd2Ref = useRef(null);
 
   // Pre-init AdsGram on mount
   useEffect(() => {
     try {
       if (typeof window !== 'undefined' && window.Adsgram) {
         rewardedAdRef.current = window.Adsgram.init({ blockId: '30183' });
-        interstitialAdRef.current = window.Adsgram.init({ blockId: 'int-30184' });
-        console.log('[AdsGram] Both ad controllers initialized');
+        rewardedAd2Ref.current = window.Adsgram.init({ blockId: '30183' });
+        console.log('[AdsGram] Both rewarded ad controllers initialized');
       }
     } catch (e) {
       console.log('[AdsGram] Init skipped:', e);
@@ -61,7 +61,7 @@ export default function Home() {
     }
   }, []);
 
-  // ── User clicks Play → show rewarded ad → fetch video → interstitial randomly after ──
+  // ── User clicks Play → show rewarded ad → fetch video → 2nd rewarded ad after ──
   const handleDownload = useCallback(async () => {
     if (!link.trim()) return;
     setStatus('fetching');
@@ -81,13 +81,13 @@ export default function Home() {
         setVideoUrl(data.videoUrl);
         setStatus('playing');
 
-        // Step 3: Show interstitial randomly after 5-15 seconds
+        // Step 3: Show 2nd rewarded ad randomly after 5-15 seconds
         const delay = 5000 + Math.random() * 10000;
         setTimeout(async () => {
           try {
-            if (interstitialAdRef.current) await interstitialAdRef.current.show();
+            if (rewardedAd2Ref.current) await rewardedAd2Ref.current.show();
           } catch (e) {
-            console.log('[AdsGram] Interstitial skipped:', e);
+            console.log('[AdsGram] 2nd rewarded ad skipped:', e);
           }
         }, delay);
 
