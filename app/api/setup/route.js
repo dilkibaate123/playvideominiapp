@@ -41,7 +41,7 @@ export async function GET(request) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                          url: webhookUrl,
-                         allowed_updates: ['message', 'callback_query', 'chat_member', 'channel_post', 'edited_channel_post'],
+                         allowed_updates: ['message', 'callback_query', 'chat_member', 'channel_post', 'edited_channel_post', 'chat_join_request'],
                     }),
                }
           );

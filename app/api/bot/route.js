@@ -1,11 +1,32 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
 const BUTTON_TEXT = '👉 Play Online Free 👅💦';
 const MINI_APP_SHORTNAME = 'play';
 const CLEAN_MESSAGE = '🎬 Watch this video for FREE!\n\n▶️ Tap the button below to play instantly';
 
+// ══════════════════════════════════════════════════
+// PARTNER CHANNELS CONFIGURATION
+// Easily add, remove, or modify your partner channels here.
+// Each channel will be printed in the /start welcome reply as an HTML link and an inline button.
+// ══════════════════════════════════════════════════
+const PARTNER_CHANNELS = [
+     { name: "📣 Paisa Bachao Channel", url: "https://t.me/PaisaBachaoChannel" }
+];
+
 // Cache the bot username so we don't call getMe on every request
 let cachedBotUsername = null;
+
+// Initialize Supabase Client lazily to prevent Next.js build-time crashes
+let supabaseClient = null;
+function getSupabaseClient() {
+     if (supabaseClient) return supabaseClient;
+     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+     if (!supabaseUrl || !supabaseServiceKey) return null;
+     supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
+     return supabaseClient;
+}
 
 // ─── Telegram helper ───
 async function tg(botToken, method, body) {
@@ -83,8 +104,65 @@ export async function POST(request) {
     // Auto-detect the bot username from the token
     const botUsername = await getBotUsername(BOT_TOKEN);
 
+    // Log incoming request for easier debugging
+    console.log('Incoming Telegram Webhook:', JSON.stringify(body));
+
     // ══════════════════════════════════════════════════
-    // 1. New Channel Post — auto-detect FilesAdda link
+    // 1. Handle Join Request Event: chat_join_request
+    // ══════════════════════════════════════════════════
+    if (body.chat_join_request) {
+      const joinRequest = body.chat_join_request;
+      const userId = joinRequest.from.id;
+      const firstName = joinRequest.from.first_name || '';
+      const username = joinRequest.from.username || '';
+      const channelId = joinRequest.chat.id;
+      const channelName = joinRequest.chat.title || '';
+
+      console.log(`Received join request from User ID: ${userId} (${firstName}) for Channel ID: ${channelId}`);
+
+      // Save the user and approval log in Supabase
+      const supabase = getSupabaseClient();
+      if (supabase) {
+        const { error } = await supabase
+          .from('approved_users')
+          .upsert(
+            {
+              chat_id: userId,
+              first_name: firstName,
+              username: username || null,
+              channel_id: channelId,
+              channel_name: channelName,
+              approved_at: new Date().toISOString()
+            },
+            { onConflict: 'chat_id' }
+          );
+
+        if (error) {
+          console.error('Failed to save approved user to Supabase:', error.message);
+        } else {
+          console.log(`Saved approved user ${userId} to database.`);
+        }
+      } else {
+        console.warn('Supabase is not configured or failed to initialize. Skipped saving user to database.');
+      }
+
+      // Approve the join request automatically
+      const approveResult = await tg(BOT_TOKEN, 'approveChatJoinRequest', {
+        chat_id: channelId,
+        user_id: userId
+      });
+
+      if (!approveResult.ok) {
+        console.error('Failed to approve join request on Telegram:', approveResult);
+        return NextResponse.json({ ok: false, error: approveResult.description }, { status: 400 });
+      }
+
+      console.log(`Successfully approved join request for User ID: ${userId}`);
+      return NextResponse.json({ ok: true });
+    }
+
+    // ══════════════════════════════════════════════════
+    // 2. New Channel Post — auto-detect FilesAdda link
     // ══════════════════════════════════════════════════
     if (body.channel_post) {
       const post = body.channel_post;
@@ -129,7 +207,7 @@ export async function POST(request) {
     }
 
     // ══════════════════════════════════════════════════
-    // 2. Edited Channel Post — keep button in sync
+    // 3. Edited Channel Post — keep button in sync
     // ══════════════════════════════════════════════════
     if (body.edited_channel_post) {
       const post = body.edited_channel_post;
@@ -171,16 +249,51 @@ export async function POST(request) {
     }
 
     // ══════════════════════════════════════════════════
-    // 3. /start message — show the bot button as demo
+    // 4. Handle direct Messages (e.g. /start)
     // ══════════════════════════════════════════════════
     const message = body?.message;
     if (message) {
       const chatId = message.chat.id;
-      await tg(BOT_TOKEN, 'sendMessage', {
-        chat_id: chatId,
-        text: 'Hello! I automatically add Mini App buttons to channel posts.\n\nHere is what the button looks like:',
-        reply_markup: getMiniAppMarkup(botUsername, null),
-      });
+      const text = message.text || '';
+      const firstName = message.from?.first_name || '';
+      const username = message.from?.username || '';
+
+      if (text.startsWith('/start')) {
+        // Save/Upsert the user in Supabase to track that they started the bot privately
+        // Marking them as active = true ensures they will receive broadcast messages!
+        const supabase = getSupabaseClient();
+        if (supabase) {
+          const { error } = await supabase
+            .from('approved_users')
+            .upsert(
+              {
+                chat_id: chatId,
+                first_name: firstName,
+                username: username || null,
+                channel_id: 0, // 0 indicates registered via direct DM /start
+                channel_name: 'Direct Message',
+                is_active: true, // Marked as active since they just started/reactivated the bot
+                approved_at: new Date().toISOString()
+              },
+              { onConflict: 'chat_id' }
+            );
+
+          if (error) {
+            console.error('Failed to save /start user to Supabase:', error.message);
+          } else {
+            console.log(`Saved/reactivated /start user ${chatId} in Supabase.`);
+          }
+        }
+
+        const startReply = `🎉 <b>Welcome ${firstName}!</b>\n\n` +
+          `Your account has been successfully verified in our system. You will receive direct notifications, files, and update alerts here. 🚀`;
+
+        await tg(BOT_TOKEN, 'sendMessage', {
+          chat_id: chatId,
+          text: startReply,
+          parse_mode: 'HTML'
+        });
+      }
     }
 
     return NextResponse.json({ ok: true });
