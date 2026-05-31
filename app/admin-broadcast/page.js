@@ -7,10 +7,10 @@ const MAX_HISTORY = 7;
 
 // ─── Default message templates ───
 const TEMPLATES = {
-     terabox: {
-          text: '🎬 Terabox Downloader Working Now',
-          buttonText: '🚀 Terabox Downloader',
-          buttonUrl: 'https://mini.playterabox.com/',
+     webseries: {
+          text: '🚀 New Video Added!\n\n🎥 Ready to watch?\n🔥 Click below and enjoy the latest upload in HD quality.',
+          buttonText: '🚀 Watch in HD',
+          buttonUrl: 'https://webseriesmini.adulttg.com/',
      },
      diskwala: {
           text: 'Finally 🎬 Diskwala Downloader Working Now, Use Fast! Limited Requests Available',
@@ -25,7 +25,7 @@ export default function AdminBroadcast() {
      const [unlocked, setUnlocked] = useState(false);
 
      // ─── Message config ───
-     const [msgType, setMsgType] = useState('terabox'); // terabox | diskwala | custom
+     const [msgType, setMsgType] = useState('webseries'); // webseries | diskwala | custom
      const [customText, setCustomText] = useState('');
      const [customBtnText, setCustomBtnText] = useState('');
      const [customBtnUrl, setCustomBtnUrl] = useState('');
@@ -345,7 +345,7 @@ export default function AdminBroadcast() {
                          <div style={styles.section}>
                               <h3 style={styles.sectionTitle}>📝 Message Type</h3>
                               <div style={styles.radioGroup}>
-                                   {['terabox', 'diskwala', 'custom'].map((t) => (
+                                   {['webseries', 'diskwala', 'custom'].map((t) => (
                                         <label key={t} style={{
                                              ...styles.radioLabel,
                                              ...(msgType === t ? styles.radioActive : {}),
@@ -358,7 +358,7 @@ export default function AdminBroadcast() {
                                                   onChange={() => setMsgType(t)}
                                                   style={{ display: 'none' }}
                                              />
-                                             {t === 'terabox' && '🎬 Terabox Preset'}
+                                             {t === 'webseries' && '🎬 Web Series Preset'}
                                              {t === 'diskwala' && '💿 Diskwala Preset'}
                                              {t === 'custom' && '✏️ Custom Message'}
                                         </label>
@@ -399,7 +399,7 @@ export default function AdminBroadcast() {
                                         <input
                                              value={customBtnUrl}
                                              onChange={(e) => setCustomBtnUrl(e.target.value)}
-                                             placeholder="https://teraboxmini.vercel.app/"
+                                             placeholder="https://webseriesmini.adulttg.com/"
                                              style={styles.input}
                                         />
                                    </div>
