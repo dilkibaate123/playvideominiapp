@@ -43,8 +43,7 @@ export default function Home() {
   const [midRollAdShown, setMidRollAdShown] = useState(false);
 
   // ─── AdsGram Ad Refs ───
-  const filesAddaAdRef = useRef(null);
-  const webseriesAdRef = useRef(null);
+  const rewardedAdRef = useRef(null);
 
   // ─── 1. Expand WebApp and Pre-init AdsGram on Mount ───
   useEffect(() => {
@@ -64,15 +63,14 @@ export default function Home() {
     // Initialize AdsGram controllers
     try {
       if (typeof window !== 'undefined' && window.Adsgram) {
-        filesAddaAdRef.current = window.Adsgram.init({ blockId: '30183' });
-        webseriesAdRef.current = window.Adsgram.init({ blockId: '33630' });
-        console.log('[AdsGram] Controllers initialized (30183 & 33630)');
+        rewardedAdRef.current = window.Adsgram.init({ blockId: '30183' });
+        console.log('[AdsGram] Controller initialized with blockId 30183');
 
         // ── 1st Ad (Mandatory on opening) ──
         setTimeout(async () => {
           try {
-            if (filesAddaAdRef.current) {
-              await filesAddaAdRef.current.show();
+            if (rewardedAdRef.current) {
+              await rewardedAdRef.current.show();
               console.log('[AdsGram] Opening ad completed.');
             }
           } catch (err) {
@@ -85,8 +83,8 @@ export default function Home() {
         console.log(`[AdsGram] Scheduled periodic ad in ${Math.round(randomDelay / 1000)}s`);
         setTimeout(async () => {
           try {
-            if (filesAddaAdRef.current) {
-              await filesAddaAdRef.current.show();
+            if (rewardedAdRef.current) {
+              await rewardedAdRef.current.show();
               console.log('[AdsGram] Periodic ad completed.');
             }
           } catch (err) {
@@ -129,10 +127,10 @@ export default function Home() {
     setStreamError('');
     setMidRollAdShown(false);
 
-    // Pre-roll ad using WebSeries block (33630)
+    // Pre-roll ad using rewarded ad controller (30183)
     try {
-      if (webseriesAdRef.current) {
-        await webseriesAdRef.current.show();
+      if (rewardedAdRef.current) {
+        await rewardedAdRef.current.show();
         console.log('[AdsGram] WebSeries pre-roll ad completed.');
       }
     } catch (adErr) {
@@ -166,9 +164,9 @@ export default function Home() {
     if (!link.trim()) return;
     setStatus('fetching');
 
-    // Pre-roll ad using FilesAdda block (30183)
+    // Pre-roll ad using rewarded ad controller (30183)
     try {
-      if (filesAddaAdRef.current) await filesAddaAdRef.current.show();
+      if (rewardedAdRef.current) await rewardedAdRef.current.show();
     } catch (e) {
       console.log('[AdsGram] FilesAdda pre-roll ad skipped:', e);
     }
@@ -185,7 +183,7 @@ export default function Home() {
         const delay = 5000 + Math.random() * 10000;
         setTimeout(async () => {
           try {
-            if (filesAddaAdRef.current) await filesAddaAdRef.current.show();
+            if (rewardedAdRef.current) await rewardedAdRef.current.show();
           } catch (e) {
             console.log('[AdsGram] FilesAdda post-roll ad skipped:', e);
           }
@@ -216,8 +214,8 @@ export default function Home() {
       video.pause();
       console.log('[AdsGram] Webseries mid-roll ad triggered...');
 
-      if (webseriesAdRef.current) {
-        webseriesAdRef.current.show()
+      if (rewardedAdRef.current) {
+        rewardedAdRef.current.show()
           .then((result) => {
             console.log('[AdsGram] Webseries mid-roll ad completed:', result);
             video.play().catch(err => console.log('Resume failed:', err));
