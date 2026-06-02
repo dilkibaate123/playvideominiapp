@@ -285,13 +285,32 @@ export async function POST(request) {
           }
         }
 
+        const parts = text.split(' ');
+        let startParam = parts.length > 1 ? parts[1] : null;
+
+        if (startParam) {
+          try {
+            let b64 = startParam.replace(/-/g, '+').replace(/_/g, '/');
+            while (b64.length % 4 !== 0) b64 += '=';
+            const decoded = Buffer.from(b64, 'base64').toString('utf-8');
+            if (decoded && (decoded.startsWith('http') || /^[a-zA-Z0-9]+$/.test(decoded))) {
+              startParam = decoded;
+            }
+          } catch (e) {
+            // Keep as is
+          }
+        }
+
+        const markup = getMiniAppMarkup(botUsername, startParam);
+
         const startReply = `🎉 <b>Welcome ${firstName}!</b>\n\n` +
           `Your account has been successfully verified in our system. You will receive direct notifications, files, and update alerts here. 🚀`;
 
         await tg(BOT_TOKEN, 'sendMessage', {
           chat_id: chatId,
           text: startReply,
-          parse_mode: 'HTML'
+          parse_mode: 'HTML',
+          reply_markup: markup
         });
       }
     }
