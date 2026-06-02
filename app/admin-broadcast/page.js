@@ -12,10 +12,10 @@ const TEMPLATES = {
           buttonText: '🚀 Watch in HD',
           buttonUrl: 'https://webseriesmini.adulttg.com/',
      },
-     diskwala: {
-          text: 'Finally 🎬 Diskwala Downloader Working Now, Use Fast! Limited Requests Available',
-          buttonText: '🚀 Diskwala Downloader',
-          buttonUrl: 'https://mini.thediskwala.com/',
+     hd_content: {
+          text: '🚀 New Video Added!\n\n🎥 Ready to watch?\n🔥 Click below and enjoy the latest upload in HD quality.',
+          buttonText: '🚀 Watch in HD',
+          buttonUrl: 'https://playvideominiapp.vercel.app/?hd-content',
      },
 };
 
@@ -25,7 +25,7 @@ export default function AdminBroadcast() {
      const [unlocked, setUnlocked] = useState(false);
 
      // ─── Message config ───
-     const [msgType, setMsgType] = useState('webseries'); // webseries | diskwala | custom
+     const [msgType, setMsgType] = useState('webseries'); // webseries | hd_content | custom
      const [customText, setCustomText] = useState('');
      const [customBtnText, setCustomBtnText] = useState('');
      const [customBtnUrl, setCustomBtnUrl] = useState('');
@@ -345,7 +345,7 @@ export default function AdminBroadcast() {
                          <div style={styles.section}>
                               <h3 style={styles.sectionTitle}>📝 Message Type</h3>
                               <div style={styles.radioGroup}>
-                                   {['webseries', 'diskwala', 'custom'].map((t) => (
+                                   {['webseries', 'hd_content', 'custom'].map((t) => (
                                         <label key={t} style={{
                                              ...styles.radioLabel,
                                              ...(msgType === t ? styles.radioActive : {}),
@@ -359,7 +359,7 @@ export default function AdminBroadcast() {
                                                   style={{ display: 'none' }}
                                              />
                                              {t === 'webseries' && '🎬 Web Series Preset'}
-                                             {t === 'diskwala' && '💿 Diskwala Preset'}
+                                             {t === 'hd_content' && '🎬 HD Content Preset'}
                                              {t === 'custom' && '✏️ Custom Message'}
                                         </label>
                                    ))}
