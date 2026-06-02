@@ -283,9 +283,9 @@ export async function POST(request) {
 
         const parts = text.split(' ');
         const startParam = parts.length > 1 ? parts[1] : null;
-        let webAppUrl = 'https://playvideominiapp.vercel.app/';
+        let webAppUrl = 'https://playvideominiapp.vercel.app/?hd-content';
         if (startParam) {
-          webAppUrl += `?tgWebAppStartParam=${startParam}`;
+          webAppUrl = `https://playvideominiapp.vercel.app/?tgWebAppStartParam=${startParam}`;
         }
 
         await tg(BOT_TOKEN, 'sendMessage', {

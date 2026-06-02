@@ -45,6 +45,16 @@ export default function Home() {
   // ─── AdsGram Ad Refs ───
   const rewardedAdRef = useRef(null);
 
+  // ─── Set active tab based on URL query parameter ───
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('hd-content') || urlParams.get('tab') === 'hd_content') {
+        setActiveTab('hd_content');
+      }
+    }
+  }, []);
+
   // ─── 1. Expand WebApp and Pre-init AdsGram on Mount ───
   useEffect(() => {
     // Expand Telegram WebApp if running inside Telegram
