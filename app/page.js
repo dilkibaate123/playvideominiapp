@@ -235,7 +235,11 @@ export default function Home() {
     if (typeof window === 'undefined') return;
     try {
       const tg = window.Telegram?.WebApp;
-      const startParam = tg?.initDataUnsafe?.start_param;
+      let startParam = tg?.initDataUnsafe?.start_param;
+      if (!startParam) {
+        const urlParams = new URLSearchParams(window.location.search);
+        startParam = urlParams.get('tgWebAppStartParam');
+      }
       if (startParam) {
         const decoded = decodeStartParam(startParam);
         if (decoded) {

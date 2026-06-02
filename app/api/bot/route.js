@@ -5,14 +5,7 @@ const BUTTON_TEXT = '👉 Play Online Free 👅💦';
 const MINI_APP_SHORTNAME = 'play';
 const CLEAN_MESSAGE = '🎬 Watch this video for FREE!\n\n▶️ Tap the button below to play instantly';
 
-// ══════════════════════════════════════════════════
-// PARTNER CHANNELS CONFIGURATION
-// Easily add, remove, or modify your partner channels here.
-// Each channel will be printed in the /start welcome reply as an HTML link and an inline button.
-// ══════════════════════════════════════════════════
-const PARTNER_CHANNELS = [
-     { name: "📣 Paisa Bachao Channel", url: "https://t.me/PaisaBachaoChannel" }
-];
+// Partner channels check removed.
 
 // Cache the bot username so we don't call getMe on every request
 let cachedBotUsername = null;
@@ -285,32 +278,25 @@ export async function POST(request) {
           }
         }
 
-        const parts = text.split(' ');
-        let startParam = parts.length > 1 ? parts[1] : null;
-
-        if (startParam) {
-          try {
-            let b64 = startParam.replace(/-/g, '+').replace(/_/g, '/');
-            while (b64.length % 4 !== 0) b64 += '=';
-            const decoded = Buffer.from(b64, 'base64').toString('utf-8');
-            if (decoded && (decoded.startsWith('http') || /^[a-zA-Z0-9]+$/.test(decoded))) {
-              startParam = decoded;
-            }
-          } catch (e) {
-            // Keep as is
-          }
-        }
-
-        const markup = getMiniAppMarkup(botUsername, startParam);
-
         const startReply = `🎉 <b>Welcome ${firstName}!</b>\n\n` +
           `Your account has been successfully verified in our system. You will receive direct notifications, files, and update alerts here. 🚀`;
+
+        const parts = text.split(' ');
+        const startParam = parts.length > 1 ? parts[1] : null;
+        let webAppUrl = 'https://playvideominiapp.vercel.app/';
+        if (startParam) {
+          webAppUrl += `?tgWebAppStartParam=${startParam}`;
+        }
 
         await tg(BOT_TOKEN, 'sendMessage', {
           chat_id: chatId,
           text: startReply,
           parse_mode: 'HTML',
-          reply_markup: markup
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: '🚀 Open Mini App', web_app: { url: webAppUrl } }]
+            ]
+          }
         });
       }
     }
