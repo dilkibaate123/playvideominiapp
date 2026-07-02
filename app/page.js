@@ -33,7 +33,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Latest');
-  
+
   const [activeVideo, setActiveVideo] = useState(null);
   const [streamUrl, setStreamUrl] = useState('');
   const [fetchingStream, setFetchingStream] = useState(false);
@@ -73,8 +73,8 @@ export default function Home() {
     // Initialize AdsGram controllers
     try {
       if (typeof window !== 'undefined' && window.Adsgram) {
-        rewardedAdRef.current = window.Adsgram.init({ blockId: '30183' });
-        console.log('[AdsGram] Controller initialized with blockId 30183');
+        rewardedAdRef.current = window.Adsgram.init({ blockId: '35934' });
+        console.log('[AdsGram] Controller initialized with blockId 35363');
 
         // ── 1st Ad (Mandatory on opening) ──
         setTimeout(async () => {
@@ -286,13 +286,13 @@ export default function Home() {
     <main className="container">
       {/* Tab Switcher at the very top */}
       <div className="tab-switcher">
-        <button 
+        <button
           className={`tab-btn ${activeTab === 'filesadda' ? 'active' : ''}`}
           onClick={() => setActiveTab('filesadda')}
         >
           🔗 FilesAdda Downloader
         </button>
-        <button 
+        <button
           className={`tab-btn ${activeTab === 'hd_content' ? 'active' : ''}`}
           onClick={() => setActiveTab('hd_content')}
         >
@@ -396,8 +396,8 @@ export default function Home() {
 
           {/* Search bar */}
           <div className="mb-4" style={{ marginBottom: '16px', position: 'relative', width: '100%' }}>
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Search episodes, web series..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -455,7 +455,7 @@ export default function Home() {
           ) : videos.length === 0 ? (
             <div className="glass-card" style={{ borderRadius: '16px', padding: '32px 16px', textAlign: 'center', marginTop: '16px', width: '100%' }}>
               <svg style={{ width: '48px', height: '48px', margin: '0 auto 12px', color: '#444' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
               <p style={{ fontWeight: '700', fontSize: '14px', color: '#ddd' }}>No Web Series Found</p>
               <p style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>Try checking another category or search term.</p>
@@ -463,7 +463,7 @@ export default function Home() {
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', width: '100%', marginTop: '8px' }}>
               {videos.map((video) => (
-                <div 
+                <div
                   key={video.url}
                   onClick={() => handlePlayWebseries(video)}
                   className="glass-card"
@@ -477,20 +477,20 @@ export default function Home() {
                 >
                   <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: '12px', overflow: 'hidden', background: '#000' }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      src={video.thumbnail} 
-                      alt={video.title} 
+                    <img
+                      src={video.thumbnail}
+                      alt={video.title}
                       style={{ width: '100%', height: '100%', objectCover: 'cover' }}
                       onError={(e) => {
                         e.target.src = 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?q=80&w=300';
                       }}
                     />
-                    
+
                     {/* Play hover effect */}
                     <div style={{ position: 'absolute', inset: '0', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#ff4757', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 10px rgba(255, 71, 87, 0.4)' }}>
                         <svg style={{ width: '14px', height: '14px', fill: '#fff', marginLeft: '2px' }} viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z"/>
+                          <path d="M8 5v14l11-7z" />
                         </svg>
                       </div>
                     </div>
@@ -548,7 +548,7 @@ export default function Home() {
                 <h2 style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', margin: '2px 0 0', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activeVideo.title}</h2>
               </div>
             </div>
-            <button 
+            <button
               onClick={() => {
                 setActiveVideo(null);
                 setStreamUrl('');
@@ -568,7 +568,7 @@ export default function Home() {
               }}
             >
               <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
@@ -585,12 +585,12 @@ export default function Home() {
               <div style={{ textAlign: 'center', padding: '24px', maxWidth: '280px' }}>
                 <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', margin: '0 auto 12px' }}>
                   <svg style={{ width: '24px', height: '24px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
                 <p style={{ fontSize: '14px', color: '#ef4444', fontWeight: 'bold' }}>Connection Error</p>
                 <p style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>{streamError}</p>
-                <button 
+                <button
                   onClick={() => handlePlayWebseries(activeVideo)}
                   style={{
                     marginTop: '16px',
@@ -609,11 +609,11 @@ export default function Home() {
               </div>
             ) : streamUrl ? (
               <div style={{ width: '100%', aspectRatio: '16/9', background: '#000' }}>
-                <video 
+                <video
                   ref={webseriesVideoRef}
-                  src={streamUrl} 
-                  controls 
-                  autoPlay 
+                  src={streamUrl}
+                  controls
+                  autoPlay
                   playsInline
                   onTimeUpdate={handleWebseriesTimeUpdate}
                   style={{ width: '100%', height: '100%', objectFit: 'contain' }}
@@ -625,7 +625,7 @@ export default function Home() {
           {/* Action Footer */}
           {streamUrl && (
             <div style={{ padding: '16px', background: '#030305', borderTop: '1px solid #111', display: 'flex', gap: '12px' }}>
-              <a 
+              <a
                 href={streamUrl}
                 target="_blank"
                 rel="noopener noreferrer"
