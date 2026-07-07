@@ -145,8 +145,11 @@ export async function POST(request) {
         user_id: userId
       });
 
-      if (!approveResult.ok) {
+if (!approveResult.ok) {
         console.error('Failed to approve join request on Telegram:', approveResult);
+        if (approveResult.error_code === 400 || approveResult.description?.includes('USER_ALREADY_PARTICIPANT')) {
+          return NextResponse.json({ ok: true, warn: approveResult.description });
+        }
         return NextResponse.json({ ok: false, error: approveResult.description }, { status: 400 });
       }
 
